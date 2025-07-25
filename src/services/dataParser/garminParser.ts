@@ -16,6 +16,10 @@ export async function parseGarminData(
   const files = Object.keys(zip.files);
   let processedFiles = 0;
 
+  console.log('Starting to parse Garmin data...');
+  console.log('Total files in ZIP:', files.length);
+  console.log('File list:', files.filter(f => !zip.files[f].dir));
+
   for (const filename of files) {
     const file = zip.files[filename];
     
@@ -23,38 +27,65 @@ export async function parseGarminData(
     
     try {
       const content = await file.async('string');
-      const data = JSON.parse(content);
+      let data;
       
-      // Parse sleep data
-      if (filename.includes('sleepData.json')) {
-        result.sleepData = parseSleepData(data);
+      try {
+        data = JSON.parse(content);
+      } catch (e) {
+        console.log(`File ${filename} is not JSON, skipping...`);
+        continue;
+      }
+      
+      console.log(`Processing file: ${filename}`);
+      
+      // Parse sleep data - check for various naming patterns
+      if (filename.toLowerCase().includes('sleep') && filename.endsWith('.json')) {
+        console.log('Found sleep data file');
+        const sleepData = parseSleepData(data);
+        console.log(`Parsed ${sleepData.length} sleep records`);
+        result.sleepData.push(...sleepData);
       }
       
       // Parse wellness data (UDS files)
-      else if (filename.includes('UDSFile_')) {
+      else if (filename.includes('UDSFile_') || filename.toLowerCase().includes('uds')) {
+        console.log('Found wellness/UDS file');
         const wellnessData = parseWellnessData(data);
         if (wellnessData) {
           result.wellnessData.push(wellnessData);
+          console.log('Added wellness data for date:', wellnessData.calendarDate);
         }
       }
       
       // Parse hydration data
-      else if (filename.includes('HydrationLogFile_')) {
+      else if (filename.toLowerCase().includes('hydration')) {
+        console.log('Found hydration file');
         const hydrationData = parseHydrationData(data);
         result.hydrationData.push(...hydrationData);
+        console.log(`Added ${hydrationData.length} hydration records`);
       }
       
       // Parse activities
-      else if (filename.includes('summarizedActivities.json')) {
-        result.activities = parseActivities(data);
+      else if (filename.toLowerCase().includes('activities') || filename.toLowerCase().includes('summarized')) {
+        console.log('Found activities file');
+        const activities = parseActivities(data);
+        result.activities.push(...activities);
+        console.log(`Added ${activities.length} activities`);
       }
       
       // Parse metrics data
-      else if (filename.includes('MetricsMaxMetData_')) {
+      else if (filename.includes('MetricsMaxMetData_') || filename.toLowerCase().includes('metrics')) {
+        console.log('Found metrics file');
         const metricsData = parseMetricsData(data);
         if (metricsData) {
           result.metricsData.push(metricsData);
+          console.log('Added metrics data for date:', metricsData.calendarDate);
         }
+      }
+      
+      // Log unknown JSON files
+      else if (filename.endsWith('.json')) {
+        console.log(`Unknown JSON file: ${filename}`);
+        console.log('Sample data:', JSON.stringify(data).slice(0, 200));
       }
     } catch (error) {
       console.warn(`Failed to parse file ${filename}:`, error);
@@ -65,6 +96,14 @@ export async function parseGarminData(
       onProgress(processedFiles / files.length);
     }
   }
+  
+  // Log final counts
+  console.log('Parsing complete:');
+  console.log(`- Sleep records: ${result.sleepData.length}`);
+  console.log(`- Wellness records: ${result.wellnessData.length}`);
+  console.log(`- Hydration records: ${result.hydrationData.length}`);
+  console.log(`- Activities: ${result.activities.length}`);
+  console.log(`- Metrics records: ${result.metricsData.length}`);
   
   // Sort data by date
   result.sleepData.sort((a, b) => 
@@ -90,6 +129,16 @@ function parseSleepData(data: any): SleepData[] {
   if (Array.isArray(data)) {
     return data.filter(item => item && typeof item === 'object');
   }
+  // Handle case where data might be wrapped in an object
+  if (data && typeof data === 'object') {
+    // Check for common wrapper properties
+    const possibleArrays = ['sleepData', 'data', 'records', 'items'];
+    for (const prop of possibleArrays) {
+      if (Array.isArray(data[prop])) {
+        return data[prop].filter((item: any) => item && typeof item === 'object');
+      }
+    }
+  }
   return [];
 }
 
@@ -114,6 +163,17 @@ function parseActivities(data: any): Activity[] {
     return data.filter(item => 
       item && typeof item === 'object' && item.activityType && item.startTimeGMT
     );
+  }
+  // Handle case where data might be wrapped in an object
+  if (data && typeof data === 'object') {
+    const possibleArrays = ['summarizedActivities', 'activities', 'data', 'records'];
+    for (const prop of possibleArrays) {
+      if (Array.isArray(data[prop])) {
+        return data[prop].filter((item: any) => 
+          item && typeof item === 'object' && item.activityType && item.startTimeGMT
+        );
+      }
+    }
   }
   return [];
 }

@@ -29,6 +29,26 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded }) => {
         setUploadProgress(20 + progress * 0.8);
       });
       
+      // Check if we parsed any data
+      const totalRecords = 
+        garminData.sleepData.length + 
+        garminData.wellnessData.length + 
+        garminData.activities.length +
+        garminData.hydrationData.length +
+        garminData.metricsData.length;
+      
+      if (totalRecords === 0) {
+        throw new Error('No data found in the ZIP file. Please ensure you uploaded the correct Garmin export file. Check the browser console for details.');
+      }
+      
+      console.log('Successfully parsed Garmin data:', {
+        sleep: garminData.sleepData.length,
+        wellness: garminData.wellnessData.length,
+        activities: garminData.activities.length,
+        hydration: garminData.hydrationData.length,
+        metrics: garminData.metricsData.length
+      });
+      
       onDataLoaded(garminData);
       setUploadProgress(100);
     } catch (err) {
