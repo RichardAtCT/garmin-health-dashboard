@@ -124,7 +124,7 @@ export async function parseGarminData(
     new Date(a.calendarDate).getTime() - new Date(b.calendarDate).getTime()
   );
   result.activities.sort((a, b) => 
-    new Date(a.startTimeGmt).getTime() - new Date(b.startTimeGmt).getTime()
+    new Date(a.startTimeGMT).getTime() - new Date(b.startTimeGMT).getTime()
   );
   result.metricsData.sort((a, b) => 
     new Date(a.calendarDate).getTime() - new Date(b.calendarDate).getTime()
