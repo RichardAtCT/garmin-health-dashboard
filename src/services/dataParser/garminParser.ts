@@ -51,6 +51,10 @@ export async function parseGarminData(
         console.log('Found wellness/UDS file');
         // UDS files contain an array of daily wellness records
         if (Array.isArray(data)) {
+          // Log the first record to see bodyBattery structure
+          if (data.length > 0 && data[0].bodyBattery) {
+            console.log('Sample bodyBattery structure:', JSON.stringify(data[0].bodyBattery, null, 2));
+          }
           data.forEach(record => {
             const wellnessData = parseWellnessData(record);
             if (wellnessData) {

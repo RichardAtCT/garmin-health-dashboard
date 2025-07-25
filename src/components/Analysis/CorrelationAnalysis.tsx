@@ -130,18 +130,28 @@ export const CorrelationAnalysis: React.FC<CorrelationAnalysisProps> = ({ data }
 
   const significantCorrelations = correlations.filter(c => c.pValue < 0.05);
   const strongCorrelations = significantCorrelations.filter(c => Math.abs(c.correlation) > 0.3);
+  const moderateCorrelations = significantCorrelations.filter(c => Math.abs(c.correlation) > 0.2);
+  
+  // Log correlations for debugging
+  if (correlations.length > 0) {
+    console.log('All correlations:', correlations);
+    console.log('Significant correlations:', significantCorrelations);
+    console.log('Moderate correlations:', moderateCorrelations);
+  }
 
   const getCorrelationColor = (r: number) => {
     if (r > 0.5) return 'text-green-600 dark:text-green-400';
     if (r > 0.3) return 'text-green-500 dark:text-green-500';
+    if (r > 0.2) return 'text-green-400 dark:text-green-600';
     if (r < -0.5) return 'text-red-600 dark:text-red-400';
     if (r < -0.3) return 'text-red-500 dark:text-red-500';
+    if (r < -0.2) return 'text-red-400 dark:text-red-600';
     return 'text-gray-600 dark:text-gray-400';
   };
 
   const getCorrelationIcon = (r: number) => {
-    if (r > 0.3) return TrendingUp;
-    if (r < -0.3) return TrendingDown;
+    if (r > 0.2) return TrendingUp;
+    if (r < -0.2) return TrendingDown;
     return Minus;
   };
 
@@ -196,24 +206,29 @@ export const CorrelationAnalysis: React.FC<CorrelationAnalysisProps> = ({ data }
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Strong</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Moderate+</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {strongCorrelations.length}
+                {moderateCorrelations.length}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">|r| &gt; 0.3</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">|r| &gt; 0.2</p>
             </div>
             <TrendingUp className="w-8 h-8 text-purple-600 dark:text-purple-400" />
           </div>
         </div>
       </div>
 
-      {/* Strong Correlations List */}
+      {/* Correlations List */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Strongest Correlations
+          {moderateCorrelations.length > 0 ? 'Significant Correlations' : 'All Significant Correlations (No Strong Correlations Found)'}
         </h3>
+        {moderateCorrelations.length === 0 && significantCorrelations.length === 0 ? (
+          <p className="text-gray-600 dark:text-gray-400 text-center py-4">
+            No significant correlations found in your data. This might be due to insufficient data or high variability in your metrics.
+          </p>
+        ) : (
         <div className="space-y-3">
-          {strongCorrelations.slice(0, 10).map((corr, index) => {
+          {(moderateCorrelations.length > 0 ? moderateCorrelations : significantCorrelations).slice(0, 10).map((corr, index) => {
             const Icon = getCorrelationIcon(corr.correlation);
             return (
               <div
@@ -244,6 +259,8 @@ export const CorrelationAnalysis: React.FC<CorrelationAnalysisProps> = ({ data }
             );
           })}
         </div>
+        )}
+        </div>
       </div>
 
       {/* Key Insights */}
@@ -253,8 +270,8 @@ export const CorrelationAnalysis: React.FC<CorrelationAnalysisProps> = ({ data }
             Positive Correlations
           </h3>
           <ul className="space-y-2">
-            {strongCorrelations
-              .filter(c => c.correlation > 0.3)
+            {(moderateCorrelations.length > 0 ? moderateCorrelations : significantCorrelations)
+              .filter(c => c.correlation > 0)
               .slice(0, 5)
               .map((corr, index) => (
                 <li key={index} className="text-blue-700 dark:text-blue-300 text-sm">
@@ -269,8 +286,8 @@ export const CorrelationAnalysis: React.FC<CorrelationAnalysisProps> = ({ data }
             Negative Correlations
           </h3>
           <ul className="space-y-2">
-            {strongCorrelations
-              .filter(c => c.correlation < -0.3)
+            {(moderateCorrelations.length > 0 ? moderateCorrelations : significantCorrelations)
+              .filter(c => c.correlation < 0)
               .slice(0, 5)
               .map((corr, index) => (
                 <li key={index} className="text-red-700 dark:text-red-300 text-sm">
