@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://yourusername.github.io/garmin-health-dashboard",
+  "homepage": "https://RichardAtCT.github.io/garmin-health-dashboard",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -37,7 +37,7 @@ A privacy-focused web application for analyzing Garmin health data exports. All 
 
 ### Using the Live App
 
-1. Visit [https://yourusername.github.io/garmin-health-dashboard](https://yourusername.github.io/garmin-health-dashboard)
+1. Visit [https://RichardAtCT.github.io/garmin-health-dashboard](https://RichardAtCT.github.io/garmin-health-dashboard)
 2. Click on the upload area or drag and drop your Garmin export ZIP file
 3. Wait for processing (happens in your browser)
 4. Explore your health data insights!
@@ -79,7 +79,7 @@ A privacy-focused web application for analyzing Garmin health data exports. All 
 ### Setup
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/garmin-health-dashboard.git
+git clone https://github.com/RichardAtCT/garmin-health-dashboard.git
 cd garmin-health-dashboard
 
 # Install dependencies
@@ -150,7 +150,7 @@ MIT License - see LICENSE file for details
 ## Support
 
 If you encounter any issues or have suggestions:
-1. Check the [Issues](https://github.com/yourusername/garmin-health-dashboard/issues) page
+1. Check the [Issues](https://github.com/RichardAtCT/garmin-health-dashboard/issues) page
 2. Create a new issue with detailed information
 3. For general questions, use the Discussions tab
 
